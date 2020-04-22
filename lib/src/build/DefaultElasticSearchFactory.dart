@@ -1,23 +1,20 @@
-//  @module build 
-// import { Factory } from 'pip-services3-components-node';
-// import { Descriptor } from 'pip-services3-commons-node';
+import 'package:pip_services3_components/pip_services3_components.dart';
+import 'package:pip_services3_commons/pip_services3_commons.dart';
+import '../log/ElasticSearchLogger.dart';
 
-// import { ElasticSearchLogger } from '../log/ElasticSearchLogger';
+/// Creates ElasticSearch components by their descriptors.
+///
+/// See [[ElasticSearchLogger]]
+class DefaultElasticSearchFactory extends Factory {
+  static final descriptor =
+      Descriptor('pip-services', 'factory', 'elasticsearch', 'default', '1.0');
+  static final ElasticSearchLoggerDescriptor =
+      Descriptor('pip-services', 'logger', 'elasticsearch', '*', '1.0');
 
-// 
-// /// Creates ElasticSearch components by their descriptors.
-// /// 
-// /// See [[ElasticSearchLogger]]
-//  
-// export class DefaultElasticSearchFactory extends Factory {
-// 	public static readonly Descriptor = new Descriptor("pip-services", "factory", "elasticsearch", "default", "1.0");
-// 	public static readonly ElasticSearchLoggerDescriptor = new Descriptor("pip-services", "logger", "elasticsearch", "*", "1.0");
+  /// Create a new instance of the factory.
 
-// 	
-// 	/// Create a new instance of the factory.
-// 	 
-// 	public constructor() {
-//         super();
-// 		this.registerAsType(DefaultElasticSearchFactory.ElasticSearchLoggerDescriptor, ElasticSearchLogger);
-// 	}
-// }
+  DefaultElasticSearchFactory() : super() {
+    registerAsType(DefaultElasticSearchFactory.ElasticSearchLoggerDescriptor,
+        ElasticSearchLogger);
+  }
+}

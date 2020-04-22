@@ -9,7 +9,10 @@ environment:
 
 dependencies:
   pip_services3_commons: ">=1.0.2 <2.0.0"
-  pip_services3_components: ">=1.0.2 <2.0.0"
+  pip_services3_components: ">=1.0.3 <2.0.0"
+  pip_services3_rpc: ">=1.0.1 < 2.0.0"
+  elastic_client: ^0.1.10
+  intl: ^0.16.1
 
 dev_dependencies:
   test: '>=1.14.2 <2.0.0'

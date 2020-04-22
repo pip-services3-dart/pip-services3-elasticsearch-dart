@@ -1,289 +1,243 @@
-//  @module log 
-//  @hidden 
-// let async = require('async');
+import 'dart:async';
 
-// import/// as moment from 'moment';
+import 'package:intl/intl.dart';
 
-// import { ConfigParams } from 'pip-services3-commons-node';
-// import { IReferences } from 'pip-services3-commons-node';
-// import { IReferenceable } from 'pip-services3-commons-node';
-// import { IOpenable } from 'pip-services3-commons-node';
-// import { IdGenerator } from 'pip-services3-commons-node';
-// import { HttpConnectionResolver } from 'pip-services3-rpc-node';
-// import { ConfigException } from 'pip-services3-commons-node';
-// import { CachedLogger } from 'pip-services3-components-node';
-// import { LogMessage } from 'pip-services3-components-node';
+import 'package:elastic_client/console_http_transport.dart';
+import 'package:elastic_client/elastic_client.dart' as elastic;
 
-// 
-// /// Logger that dumps execution logs to ElasticSearch service.
-// /// 
-// /// ElasticSearch is a popular search index. It is often used 
-// /// to store and index execution logs by itself or as a part of
-// /// ELK (ElasticSearch - Logstash - Kibana) stack.
-// /// 
-// /// Authentication is not supported in this version.
-// /// 
-// /// ### Configuration parameters ###
-// /// 
-// /// - level:             maximum log level to capture
-// /// - source:            source (context) name
-// /// - connection(s):
-// ///     - discovery_key:         (optional) a key to retrieve the connection from [[https://rawgit.com/pip-services-node/pip-services3-components-node/master/doc/api/interfaces/connect.idiscovery.html IDiscovery]]
-// ///     - protocol:              connection protocol: http or https
-// ///     - host:                  host name or IP address
-// ///     - port:                  port number
-// ///     - uri:                   resource URI or connection string with all parameters in it
-// /// - options:
-// ///     - interval:        interval in milliseconds to save log messages (default: 10 seconds)
-// ///     - max_cache_size:  maximum number of messages stored in this cache (default: 100)
-// ///     - index:           ElasticSearch index name (default: "log")
-// ///     - date_format      The date format to use when creating the index name. Eg. log-YYYYMMDD (default: "YYYYMMDD"). See [[https://momentjs.com/docs/#/displaying/format/]]
-// ///     - daily:           true to create a new index every day by adding date suffix to the index
-// ///                        name (default: false)
-// ///     - reconnect:       reconnect timeout in milliseconds (default: 60 sec)
-// ///     - timeout:         invocation timeout in milliseconds (default: 30 sec)
-// ///     - max_retries:     maximum number of retries (default: 3)
-// ///     - index_message:   true to enable indexing for message object (default: false)
-// /// 
-// /// ### References ###
-// /// 
-// /// - \*:context-info:\*:\*:1.0      (optional) [[https://rawgit.com/pip-services-node/pip-services3-components-node/master/doc/api/classes/info.contextinfo.html ContextInfo]] to detect the context id and specify counters source
-// /// - \*:discovery:\*:\*:1.0         (optional) [[https://rawgit.com/pip-services-node/pip-services3-components-node/master/doc/api/interfaces/connect.idiscovery.html IDiscovery]] services to resolve connection
-// /// 
-// /// ### Example ###
-// /// 
-// ///     let logger = new ElasticSearchLogger();
-// ///     logger.configure(ConfigParams.fromTuples(
-// ///         "connection.protocol", "http",
-// ///         "connection.host", "localhost",
-// ///         "connection.port", 9200
-// ///     ));
-// ///     
-// ///     logger.open("123", (err) => {
-// ///         ...
-// ///     });
-// ///     
-// ///     logger.error("123", ex, "Error occured: %s", ex.message);
-// ///     logger.debug("123", "Everything is OK.");
-//  
-// export class ElasticSearchLogger extends CachedLogger implements IReferenceable, IOpenable {
-//     private _connectionResolver: HttpConnectionResolver = new HttpConnectionResolver();
+import 'package:pip_services3_commons/pip_services3_commons.dart';
+import 'package:pip_services3_rpc/pip_services3_rpc.dart';
+import 'package:pip_services3_components/pip_services3_components.dart';
 
-//     private _timer: any;
-//     private _index: string = "log";
-//     private _dateFormat: string = "YYYYMMDD";
-//     private _dailyIndex: boolean = false;
-//     private _currentIndex: string;
-//     private _reconnect: number = 60000;
-//     private _timeout: number = 30000;
-//     private _maxRetries: number = 3;
-//     private _indexMessage: boolean = false;
+/// Logger that dumps execution logs to ElasticSearch service.
+///
+/// ElasticSearch is a popular search index. It is often used
+/// to store and index execution logs by itself or as a part of
+/// ELK (ElasticSearch - Logstash - Kibana) stack.
+///
+/// Authentication is not supported in this version.
+///
+/// ### Configuration parameters ###
+///
+/// - [level]:             maximum log level to capture
+/// - [source]:            source (context) name
+/// - [connection](s):
+///     - [discovery_key]:         (optional) a key to retrieve the connection from [[https://rawgit.com/pip-services-node/package:pip_services3-components-node/master/doc/api/interfaces/connect.idiscovery.html IDiscovery]]
+///     - [protocol]:              connection protocol: http or https
+///     - [host]:                  host name or IP address
+///     - [port]:                  port number
+///     - [uri]:                   resource URI or connection string with all parameters in it
+/// - [options]:
+///     - [interval]:        interval in milliseconds to save log messages (default: 10 seconds)
+///     - [max_cache_size]:  maximum number of messages stored in this cache (default: 100)
+///     - [index]:           ElasticSearch index name (default: 'log')
+///     - [date_format]      The date format to use when creating the index name. Eg. log-YYYYMMDD (default: 'YYYYMMDD'). See [[https://momentjs.com/docs/#/displaying/format/]]
+///     - [daily]:           true to create a new index every day by adding date suffix to the index
+///                        name (default: false)
+///     - [reconnect]:       reconnect timeout in milliseconds (default: 60 sec)
+///     - [timeout]:         invocation timeout in milliseconds (default: 30 sec)
+///     - [max_retries]:     maximum number of retries (default: 3)
+///     - [index_message]:   true to enable indexing for message object (default: false)
+///
+/// ### References ###
+///
+/// - \*:context-info:\*:\*:1.0      (optional) [ContextInfo] to detect the context id and specify counters source
+/// - \*:discovery:\*:\*:1.0         (optional) [IDiscovery] services to resolve connection
+///
+/// ### Example ###
+///
+///     var logger = ElasticSearchLogger();
+///     logger.configure(ConfigParams.fromTuples([
+///         'connection.protocol', 'http',
+///         'connection.host', 'localhost',
+///         'connection.port', 9200
+///     ]));
+///
+///     await logger.open('123')
+///         ...
+///
+///     logger.error('123', ex, 'Error occured: %s', ex.message);
+///     logger.debug('123', 'Everything is OK.');
 
-//     private _client: any = null;
+class ElasticSearchLogger extends CachedLogger
+    implements IReferenceable, IOpenable {
+  final _connectionResolver = HttpConnectionResolver();
 
-//     
-//     /// Creates a new instance of the logger.
-//      
-//     public constructor() {
-//         super();
-//     }
+  Timer _timer;
+  String _index = 'log';
+  String _dateFormat = 'YYYYMMDD';
+  bool _dailyIndex = false;
+  String _currentIndex;
+  int _reconnect = 60000;
+  int _timeout = 30000;
+  int _maxRetries = 3;
+  bool _indexMessage = false;
 
-//     
-//     /// Configures component by passing configuration parameters.
-//     /// 
-//     /// -  config    configuration parameters to be set.
-//      
-//     public configure(config: ConfigParams): void {
-//         super.configure(config);
+  elastic.Client _client;
+  ConsoleHttpTransport _transport;
 
-//         this._connectionResolver.configure(config);
+  /// Creates a new instance of the logger.
+  ElasticSearchLogger() : super();
 
-//         this._index = config.getAsStringWithDefault('index', this._index);
-//         this._dateFormat = config.getAsStringWithDefault ("date_format", this._dateFormat);
-//         this._dailyIndex = config.getAsBooleanWithDefault('daily', this._dailyIndex);
-//         this._reconnect = config.getAsIntegerWithDefault('options.reconnect', this._reconnect);
-//         this._timeout = config.getAsIntegerWithDefault('options.timeout', this._timeout);
-//         this._maxRetries = config.getAsIntegerWithDefault('options.max_retries', this._maxRetries);
-//         this._indexMessage = config.getAsBooleanWithDefault('options.index_message', this._indexMessage);
-//     }
+  /// Configures component by passing configuration parameters.
+  ///
+  /// -  [config]    configuration parameters to be set.
+  @override
+  void configure(ConfigParams config) {
+    super.configure(config);
 
-//     
-// 	/// Sets references to dependent components.
-// 	/// 
-// 	/// -  references 	references to locate the component dependencies. 
-//      
-//     public setReferences(references: IReferences): void {
-//         super.setReferences(references);
-//         this._connectionResolver.setReferences(references);
-//     }
+    _connectionResolver.configure(config);
 
-//     
-// 	/// Checks if the component is opened.
-// 	/// 
-// 	/// @returns true if the component has been opened and false otherwise.
-//      
-//     public isOpen(): boolean {
-//         return this._timer != null;
-//     }
+    _index = config.getAsStringWithDefault('index', _index);
+    _dateFormat = config.getAsStringWithDefault('date_format', _dateFormat);
+    _dailyIndex = config.getAsBooleanWithDefault('daily', _dailyIndex);
+    _reconnect =
+        config.getAsIntegerWithDefault('options.reconnect', _reconnect);
+    _timeout = config.getAsIntegerWithDefault('options.timeout', _timeout);
+    _maxRetries =
+        config.getAsIntegerWithDefault('options.max_retries', _maxRetries);
+    _indexMessage =
+        config.getAsBooleanWithDefault('options.index_message', _indexMessage);
+  }
 
-//     
-// 	/// Opens the component.
-// 	/// 
-// 	/// -  correlationId 	(optional) transaction id to trace execution through call chain.
-//     /// -  callback 			callback function that receives error or null no errors occured.
-//      
-//     public open(correlationId: string, callback: (err: any) => void): void {
-//         if (this.isOpen()) {
-//             callback(null);
-//             return;
-//         }
+  /// Sets references to dependent components.
+  ///
+  /// -  [references] 	references to locate the component dependencies.
+  @override
+  void setReferences(IReferences references) {
+    super.setReferences(references);
+    _connectionResolver.setReferences(references);
+  }
 
-//         this._connectionResolver.resolve(correlationId, (err, connection) => {
-//             if (connection == null)
-//                 err = new ConfigException(correlationId, 'NO_CONNECTION', 'Connection is not configured');
+  /// Checks if the component is opened.
+  ///
+  /// Return true if the component has been opened and false otherwise.
+  @override
+  bool isOpen() {
+    return _timer != null;
+  }
 
-//             if (err != null) {
-//                 callback(err);
-//                 return;
-//             }
+  /// Opens the component.
+  ///
+  /// -  [correlationId] 	(optional) transaction id to trace execution through call chain.
+  /// Return 			Future that receives null no errors occured.
+  /// Throws error
+  @override
+  Future open(String correlationId) async {
+    if (isOpen()) {
+      return null;
+    }
 
-//             let uri = connection.getUri();
+    var connection = await _connectionResolver.resolve(correlationId);
+    if (connection == null) {
+      throw ConfigException(
+          correlationId, 'NO_CONNECTION', 'Connection is not configured');
+    }
 
-//             let options = {
-//                 host: uri,
-//                 requestTimeout: this._timeout,
-//                 deadTimeout: this._reconnect,
-//                 maxRetries: this._maxRetries
-//             };
+    var uri = connection.getUri();
 
-//             let elasticsearch = require('elasticsearch');
-//             this._client = new elasticsearch.Client(options);
+    // var options = {
+    //     host: uri,
+    //     requestTimeout: this._timeout,
+    //     deadTimeout: this._reconnect,
+    //     maxRetries: this._maxRetries
+    // };
 
-//             this.createIndexIfNeeded(correlationId, true, (err) => {
-//                 if (err == null) {
-//                     this._timer = setInterval(() => { this.dump() }, this._interval);
-//                 }
+    _transport = ConsoleHttpTransport(Uri.parse(uri));
+    _client = elastic.Client(_transport);
 
-//                 callback(err);
-//             });
-//         });
-//     }
+    await _createIndexIfNeeded(correlationId, true);
+    _timer = Timer.periodic(Duration(milliseconds: interval), (tm) {
+      dump();
+    });
+  }
 
-//     
-// 	/// Closes component and frees used resources.
-// 	/// 
-// 	/// -  correlationId 	(optional) transaction id to trace execution through call chain.
-//     /// -  callback 			callback function that receives error or null no errors occured.
-//      
-//     public close(correlationId: string, callback: (err: any) => void): void {
-//         this.save(this._cache, (err) => {
-//             if (this._timer)
-//                 clearInterval(this._timer);
+  /// Closes component and frees used resources.
+  ///
+  /// -  [correlationId] 	(optional) transaction id to trace execution through call chain.
+  /// Return 			Future that receives error or null no errors occured.
+  @override
+  Future close(String correlationId) async {
+    await save(cache);
+    if (_timer != null) {
+      _timer.cancel();
+    }
 
-//             this._cache = [];
-//             this._timer = null;
-//             this._client = null;
+    cache = [];
+    _timer = null;
+    _client = null;
+    await _transport.close();
+    _transport = null;
+  }
 
-//             if (callback) callback(null);
-//         });
-//     }
+  String _getCurrentIndex() {
+    if (!_dailyIndex) return _index;
 
-//     private getCurrentIndex(): string {
-//         if (!this._dailyIndex) return this._index;
+    return _index + '-' + DateFormat('yyyyMMdd').format(DateTime.now().toUtc());
+  }
 
-//         let today = new Date().toUTCString();
-//         let datePattern = moment(today).format(this._dateFormat);
+  Future _createIndexIfNeeded(String correlationId, bool force) async {
+    var newIndex = _getCurrentIndex();
+    if (!force && _currentIndex == newIndex) {
+      return null;
+    }
 
-//         return this._index + "-" + datePattern;
-//     }
+    _currentIndex = newIndex;
+    var exists = await _client.indexExists(_currentIndex);
 
-//     private createIndexIfNeeded(correlationId: string, force: boolean, callback: (err: any) => void): void {
-//         let newIndex = this.getCurrentIndex();
-//         if (!force && this._currentIndex == newIndex) {
-//             callback(null);
-//             return;
-//         }
+    if (exists) {
+      return null;
+    }
 
-//         this._currentIndex = newIndex;
-//         this._client.indices.exists(
-//             { index: this._currentIndex },
-//             (err, exists) => {
-//                 if (err || exists) {
-//                     callback(err);
-//                     return;
-//                 }
+    await _client.updateIndex(_currentIndex, {
+      'settings': {'number_of_shards': 1},
+      'mappings': {
+        'log_message': {
+          'properties': {
+            'time': {'type': 'date', 'index': true},
+            'source': {'type': 'keyword', 'index': true},
+            'level': {'type': 'keyword', 'index': true},
+            'correlation_id': {'type': 'text', 'index': true},
+            'error': {
+              'type': 'object',
+              'properties': {
+                'type': {'type': 'keyword', 'index': true},
+                'category': {'type': 'keyword', 'index': true},
+                'status': {'type': 'integer', 'index': false},
+                'code': {'type': 'keyword', 'index': true},
+                'message': {'type': 'text', 'index': false},
+                'details': {'type': 'object'},
+                'correlation_id': {'type': 'text', 'index': false},
+                'cause': {'type': 'text', 'index': false},
+                'stack_trace': {'type': 'text', 'index': false}
+              }
+            },
+            'message': {'type': 'text', 'index': _indexMessage}
+          }
+        }
+      }
+    });
+  }
 
-//                 this._client.indices.create(
-//                     {
-//                         index: this._currentIndex,
-//                         body: {
-//                             settings: {
-//                                 number_of_shards: 1
-//                             },
-//                             mappings: {
-//                                 log_message: {
-//                                     properties: {
-//                                         time: { type: "date", index: true },
-//                                         source: { type: "keyword", index: true },
-//                                         level: { type: "keyword", index: true },
-//                                         correlation_id: { type: "text", index: true },
-//                                         error: {
-//                                             type: "object",
-//                                             properties: {
-//                                                 type: { type: "keyword", index: true },
-//                                                 category: { type: "keyword", index: true },
-//                                                 status: { type: "integer", index: false },
-//                                                 code: { type: "keyword", index: true },
-//                                                 message: { type: "text", index: false },
-//                                                 details: { type: "object" },
-//                                                 correlation_id: { type: "text", index: false },
-//                                                 cause: { type: "text", index: false },
-//                                                 stack_trace: { type: "text", index: false }
-//                                             }
-//                                         },
-//                                         message: { type: "text", index: this._indexMessage }
-//                                     }
-//                                 }
-//                             }
-//                         }
-//                     },
-//                     (err) => {
-//                         // Skip already exist errors
-//                         if (err && err.message.indexOf('resource_already_exists') >= 0)
-//                             err = null;
+  /// Saves log messages from the cache.
+  ///
+  /// -  [messages]  a list with log messages
+  /// Return  Future that receives error or null for success.
+  @override
+  Future save(List<LogMessage> messages) async {
+    if (!isOpen() && messages.isEmpty) {
+      return null;
+    }
 
-//                         callback(err);
-//                     }
-//                 );
-//             }
-//         );
-//     }
+    await _createIndexIfNeeded('elasticsearch_logger', false);
 
-//     
-//     /// Saves log messages from the cache.
-//     /// 
-//     /// -  messages  a list with log messages
-//     /// -  callback  callback function that receives error or null for success.
-//      
-//     protected save(messages: LogMessage[], callback: (err: any) => void): void {
-//         if (!this.isOpen() && messages.length == 0) {
-//             if (callback) callback(null);
-//             return;
-//         }
+    var bulk = <Doc>[];
+    for (var message in messages) {
+      var doc = Doc(IdGenerator.nextLong(), message.toJson(),
+          index: _currentIndex, type: 'log_message');
+      bulk.add(doc);
+    }
 
-//         this.createIndexIfNeeded('elasticsearch_logger', false, (err) => {
-//             if (err) {
-//                 if (callback) callback(err);
-//                 return;
-//             }
-
-//             let bulk = [];
-//             for (let message of messages) {
-//                 bulk.push({ index: { _index: this._currentIndex, _type: "log_message", _id: IdGenerator.nextLong() } })
-//                 bulk.push(message);
-//             }
-
-//             this._client.bulk({ body: bulk }, callback);
-//         });
-//     }
-// }
+    await _client.updateDocs(_currentIndex, 'log_message', bulk);
+  }
+}
