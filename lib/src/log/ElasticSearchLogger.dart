@@ -21,8 +21,8 @@ import 'package:pip_services3_components/pip_services3_components.dart';
 ///
 /// - [level]:             maximum log level to capture
 /// - [source]:            source (context) name
-/// - [connection](s):
-///     - [discovery_key]:         (optional) a key to retrieve the connection from [[https://rawgit.com/pip-services-node/package:pip_services3-components-node/master/doc/api/interfaces/connect.idiscovery.html IDiscovery]]
+/// - [connection(s)]:
+///     - [discovery_key]:         (optional) a key to retrieve the connection from [IDiscovery]
 ///     - [protocol]:              connection protocol: http or https
 ///     - [host]:                  host name or IP address
 ///     - [port]:                  port number
@@ -31,7 +31,7 @@ import 'package:pip_services3_components/pip_services3_components.dart';
 ///     - [interval]:        interval in milliseconds to save log messages (default: 10 seconds)
 ///     - [max_cache_size]:  maximum number of messages stored in this cache (default: 100)
 ///     - [index]:           ElasticSearch index name (default: 'log')
-///     - [date_format]      The date format to use when creating the index name. Eg. log-YYYYMMDD (default: 'YYYYMMDD'). See [[https://momentjs.com/docs/#/displaying/format/]]
+///     - [date_format]      The date format to use when creating the index name. Eg. log-yyyyMMdd (default: 'yyyyMMdd'). See [https://pub.dev/documentation/intl/latest/intl/DateFormat-class.html]
 ///     - [daily]:           true to create a new index every day by adding date suffix to the index
 ///                        name (default: false)
 ///     - [reconnect]:       reconnect timeout in milliseconds (default: 60 sec)
@@ -65,7 +65,7 @@ class ElasticSearchLogger extends CachedLogger
 
   Timer _timer;
   String _index = 'log';
-  String _dateFormat = 'YYYYMMDD';
+  String _dateFormat = 'yyyyMMdd';
   bool _dailyIndex = false;
   String _currentIndex;
   int _reconnect = 60000;
@@ -155,7 +155,8 @@ class ElasticSearchLogger extends CachedLogger
   /// Closes component and frees used resources.
   ///
   /// -  [correlationId] 	(optional) transaction id to trace execution through call chain.
-  /// Return 			Future that receives error or null no errors occured.
+  /// Return 			Future that receives null no errors occured.
+  /// Throws error
   @override
   Future close(String correlationId) async {
     await save(cache);
@@ -173,7 +174,9 @@ class ElasticSearchLogger extends CachedLogger
   String _getCurrentIndex() {
     if (!_dailyIndex) return _index;
 
-    return _index + '-' + DateFormat('yyyyMMdd').format(DateTime.now().toUtc());
+    return _index +
+        '-' +
+        DateFormat(_dateFormat).format(DateTime.now().toUtc());
   }
 
   Future _createIndexIfNeeded(String correlationId, bool force) async {
@@ -222,7 +225,8 @@ class ElasticSearchLogger extends CachedLogger
   /// Saves log messages from the cache.
   ///
   /// -  [messages]  a list with log messages
-  /// Return  Future that receives error or null for success.
+  /// Return  Future that receives null for success.
+  /// Throws error
   @override
   Future save(List<LogMessage> messages) async {
     if (!isOpen() && messages.isEmpty) {
@@ -238,6 +242,11 @@ class ElasticSearchLogger extends CachedLogger
       bulk.add(doc);
     }
 
-    await _client.updateDocs(_currentIndex, 'log_message', bulk);
+    var compleate =
+        await _client.updateDocs(_currentIndex, 'log_message', bulk);
+    if (!compleate) {
+      throw ApplicationException('Logger', 'elasticsearch_logger', 'SAVE_ERROR',
+          'Can\'t save log messages to Elasticsearch server!');
+    }
   }
 }

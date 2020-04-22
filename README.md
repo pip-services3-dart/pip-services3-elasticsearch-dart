@@ -15,7 +15,7 @@ Quick Links:
 
 The library is created and maintained by 
 - **Sergey Seroukhov**
-- **LEvichev Dmitry**
+- **Levichev Dmitry**
 
 The documentation is written by:
 - **Mark Makarychev**
