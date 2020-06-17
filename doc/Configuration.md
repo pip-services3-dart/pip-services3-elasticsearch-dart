@@ -35,7 +35,7 @@ Example:
     host: "localhost"
     port: 9200
   options:
-    interval: 10
+    interval: 10000
     max_cache_size: 100
     index: "log"
     daily: true       
