@@ -22,7 +22,7 @@ import 'package:pip_services3_components/pip_services3_components.dart';
 /// - [level]:             maximum log level to capture
 /// - [source]:            source (context) name
 /// - [connection(s)]:
-///     - [discovery_key]:         (optional) a key to retrieve the connection from [IDiscovery]
+///     - [discovery_key]:         (optional) a key to retrieve the connection from [IDiscovery](https://pub.dev/documentation/pip_services3_components/latest/pip_services3_components/IDiscovery-class.html)
 ///     - [protocol]:              connection protocol: http or https
 ///     - [host]:                  host name or IP address
 ///     - [port]:                  port number
@@ -31,7 +31,7 @@ import 'package:pip_services3_components/pip_services3_components.dart';
 ///     - [interval]:        interval in milliseconds to save log messages (default: 10 seconds)
 ///     - [max_cache_size]:  maximum number of messages stored in this cache (default: 100)
 ///     - [index]:           ElasticSearch index name (default: 'log')
-///     - [date_format]      The date format to use when creating the index name. Eg. log-yyyyMMdd (default: 'yyyyMMdd'). See [https://pub.dev/documentation/intl/latest/intl/DateFormat-class.html]
+///     - [date_format]      The date format to use when creating the index name. Eg. log-yyyyMMdd (default: 'yyyyMMdd'). See [DateFormat](https://pub.dev/documentation/intl/latest/intl/DateFormat-class.html)
 ///     - [daily]:           true to create a new index every day by adding date suffix to the index
 ///                        name (default: false)
 ///     - [reconnect]:       reconnect timeout in milliseconds (default: 60 sec)
@@ -41,8 +41,8 @@ import 'package:pip_services3_components/pip_services3_components.dart';
 ///
 /// ### References ###
 ///
-/// - \*:context-info:\*:\*:1.0      (optional) [ContextInfo] to detect the context id and specify counters source
-/// - \*:discovery:\*:\*:1.0         (optional) [IDiscovery] services to resolve connection
+/// - \*:context-info:\*:\*:1.0      (optional) [ContextInfo](https://pub.dev/documentation/pip_services3_components/latest/pip_services3_components/ContextInfo-class.html) to detect the context id and specify counters source
+/// - \*:discovery:\*:\*:1.0         (optional) [IDiscovery](https://pub.dev/documentation/pip_services3_components/latest/pip_services3_components/IDiscovery-class.html) services to resolve connection
 ///
 /// ### Example ###
 ///

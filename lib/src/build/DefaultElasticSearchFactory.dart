@@ -4,7 +4,7 @@ import '../log/ElasticSearchLogger.dart';
 
 /// Creates ElasticSearch components by their descriptors.
 ///
-/// See [[ElasticSearchLogger]]
+/// See [ElasticSearchLogger]
 class DefaultElasticSearchFactory extends Factory {
   static final descriptor =
       Descriptor('pip-services', 'factory', 'elasticsearch', 'default', '1.0');
