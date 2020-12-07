@@ -13,6 +13,7 @@ The module contains the following packages:
 
 * [Configuration](https://www.pipservices.org/recipies/configuration)
 * [Logging](https://www.pipservices.org/recipies/active-logic)
+* [Virtual memory configuration](https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html)
 * [API Reference](https://pub.dev/documentation/pip_services3_elasticsearch/latest/pip_services3_elasticsearch/pip_services3_elasticsearch-library.html)
 * [Change Log](CHANGELOG.md)
 * [Get Help](https://www.pipservices.org/community/help)
