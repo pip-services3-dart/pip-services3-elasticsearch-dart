@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the ElasticSearchLogger class from the pip_services3_elasticsearch library, for the Dart programming language.">
+  <title>ElasticSearchLogger class - pip_services3_elasticsearch library - Dart API</title>
+
+  
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500,400i,400,300|Source+Sans+Pro:400,300,700" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="../static-assets/github.css">
+  <link rel="stylesheet" href="../static-assets/styles.css">
+  <link rel="icon" href="../static-assets/favicon.png">
+
+</head>
+
+<body data-base-href="../"
+      data-using-base-href="false">
+
+<div id="overlay-under-drawer"></div>
+
+<header id="title">
+  <button id="sidenav-left-toggle" type="button">&nbsp;</button>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../index.html">pip_services3_elasticsearch</a></li>
+    <li><a href="../pip_services3_elasticsearch/pip_services3_elasticsearch-library.html">pip_services3_elasticsearch</a></li>
+    <li class="self-crumb">ElasticSearchLogger class</li>
+  </ol>
+  <div class="self-name">ElasticSearchLogger</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+
+<main>
+
+  <div id="dartdoc-sidebar-left" class="col-xs-6 col-sm-3 col-md-2 sidebar sidebar-offcanvas-left">
+    <header id="header-search-sidebar" class="hidden-l">
+      <form class="search-sidebar" role="search">
+        <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+      </form>
+    </header>
+    
+    <ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+      <li><a href="../index.html">pip_services3_elasticsearch</a></li>
+      <li><a href="../pip_services3_elasticsearch/pip_services3_elasticsearch-library.html">pip_services3_elasticsearch</a></li>
+      <li class="self-crumb">ElasticSearchLogger class</li>
+    </ol>
+    
+    <h5>pip_services3_elasticsearch library</h5>
+    <ol>
+      <li class="section-title"><a href="../pip_services3_elasticsearch/pip_services3_elasticsearch-library.html#classes">Classes</a></li>
+      <li><a href="../pip_services3_elasticsearch/DefaultElasticSearchFactory-class.html">DefaultElasticSearchFactory</a></li>
+      <li><a href="../pip_services3_elasticsearch/ElasticSearchLogger-class.html">ElasticSearchLogger</a></li>
+    
+    
+    
+    
+    
+    
+    
+    
+    </ol>
+  </div>
+
+  <div id="dartdoc-main-content" class="col-xs-12 col-sm-9 col-md-8 main-content">
+      <div><h1><span class="kind-class">ElasticSearchLogger</span> class </h1></div>
+
+    <section class="desc markdown">
+      <p>Logger that dumps execution logs to ElasticSearch service.</p>
+<p>ElasticSearch is a popular search index. It is often used
+to store and index execution logs by itself or as a part of
+ELK (ElasticSearch - Logstash - Kibana) stack.</p>
+<p>Authentication is not supported in this version.</p>
+<h3 id="configuration-parameters">Configuration parameters</h3>
+<ul>
+<li><code>level</code>:             maximum log level to capture</li>
+<li><code>source</code>:            source (context) name</li>
+<li><code>connection(s)</code>:
+<ul>
+<li><code>discovery_key</code>:         (optional) a key to retrieve the connection from <a href="https://pub.dev/documentation/pip_services3_components/latest/pip_services3_components/IDiscovery-class.html">IDiscovery</a></li>
+<li><code>protocol</code>:              connection protocol: http or https</li>
+<li><code>host</code>:                  host name or IP address</li>
+<li><code>port</code>:                  port number</li>
+<li><code>uri</code>:                   resource URI or connection string with all parameters in it</li>
+</ul>
+</li>
+<li><code>options</code>:
+<ul>
+<li><code>interval</code>:        interval in milliseconds to save log messages (default: 10 seconds)</li>
+<li><code>max_cache_size</code>:  maximum number of messages stored in this cache (default: 100)</li>
+<li><code>index</code>:           ElasticSearch index name (default: 'log')</li>
+<li><code>date_format</code>      The date format to use when creating the index name. Eg. log-yyyyMMdd (default: 'yyyyMMdd'). See <a href="https://pub.dev/documentation/intl/latest/intl/DateFormat-class.html">DateFormat</a></li>
+<li><code>daily</code>:           true to create a new index every day by adding date suffix to the index
+                 name (default: false)</li>
+<li><code>reconnect</code>:       reconnect timeout in milliseconds (default: 60 sec)</li>
+<li><code>timeout</code>:         invocation timeout in milliseconds (default: 30 sec)</li>
+<li><code>max_retries</code>:     maximum number of retries (default: 3)</li>
+<li><code>index_message</code>:   true to enable indexing for message object (default: false)</li>
+</ul>
+</li>
+</ul>
+<h3 id="references">References</h3>
+<ul>
+<li>*:context-info:*:*:1.0      (optional) <a href="https://pub.dev/documentation/pip_services3_components/latest/pip_services3_components/ContextInfo-class.html">ContextInfo</a> to detect the context id and specify counters source</li>
+<li>*:discovery:*:*:1.0         (optional) <a href="https://pub.dev/documentation/pip_services3_components/latest/pip_services3_components/IDiscovery-class.html">IDiscovery</a> services to resolve connection</li>
+</ul>
+<h3 id="example">Example</h3>
+<pre class="language-dart"><code>var logger = ElasticSearchLogger();
+logger.configure(ConfigParams.fromTuples([
+    'connection.protocol', 'http',
+    'connection.host', 'localhost',
+    'connection.port', 9200
+]));
+
+await logger.open('123')
+    ...
+
+logger.error('123', ex, 'Error occured: %s', ex.message);
+logger.debug('123', 'Everything is OK.');
+</code></pre>
+    </section>
+    
+
+    <section class="summary offset-anchor" id="constructors">
+      <h2>Constructors</h2>
+
+      <dl class="constructor-summary-list">
+        <dt id="ElasticSearchLogger" class="callable">
+          <span class="name"><a href="../pip_services3_elasticsearch/ElasticSearchLogger/ElasticSearchLogger.html">ElasticSearchLogger</a></span><span class="signature">()</span>
+        </dt>
+        <dd>
+          Creates a new instance of the logger. 
+        </dd>
+      </dl>
+    </section>
+
+    <section class="summary offset-anchor inherited" id="instance-properties">
+      <h2>Properties</h2>
+
+      <dl class="properties">
+        <dt id="hashCode" class="property inherited">
+          <span class="name"><a href="../pip_services3_elasticsearch/ElasticSearchLogger/hashCode.html">hashCode</a></span>
+          <span class="signature">&#8594; int</span>         
+        </dt>
+        <dd class="inherited">
+          The hash code for this object. <a href="../pip_services3_elasticsearch/ElasticSearchLogger/hashCode.html">[...]</a>
+                  <div class="features">read-only, inherited</div>
+</dd>
+        <dt id="runtimeType" class="property inherited">
+          <span class="name"><a href="../pip_services3_elasticsearch/ElasticSearchLogger/runtimeType.html">runtimeType</a></span>
+          <span class="signature">&#8594; Type</span>         
+        </dt>
+        <dd class="inherited">
+          A representation of the runtime type of the object. 
+                  <div class="features">read-only, inherited</div>
+</dd>
+      </dl>
+    </section>
+
+    <section class="summary offset-anchor" id="instance-methods">
+      <h2>Methods</h2>
+      <dl class="callables">
+        <dt id="close" class="callable">
+          <span class="name"><a href="../pip_services3_elasticsearch/ElasticSearchLogger/close.html">close</a></span><span class="signature">(<wbr><span class="parameter" id="close-param-correlationId"><span class="type-annotation">String</span> <span class="parameter-name">correlationId</span></span><wbr>)
+            <span class="returntype parameter">&#8594; Future</span>
+          </span>
+                  </dt>
+        <dd>
+          Closes component and frees used resources. <a href="../pip_services3_elasticsearch/ElasticSearchLogger/close.html">[...]</a>
+                  
+</dd>
+        <dt id="configure" class="callable">
+          <span class="name"><a href="../pip_services3_elasticsearch/ElasticSearchLogger/configure.html">configure</a></span><span class="signature">(<wbr><span class="parameter" id="configure-param-config"><span class="type-annotation">dynamic</span> <span class="parameter-name">config</span></span><wbr>)
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+                  </dt>
+        <dd>
+          Configures component by passing configuration parameters. <a href="../pip_services3_elasticsearch/ElasticSearchLogger/configure.html">[...]</a>
+                  
+</dd>
+        <dt id="isOpen" class="callable">
+          <span class="name"><a href="../pip_services3_elasticsearch/ElasticSearchLogger/isOpen.html">isOpen</a></span><span class="signature">(<wbr>)
+            <span class="returntype parameter">&#8594; bool</span>
+          </span>
+                  </dt>
+        <dd>
+          Checks if the component is opened. <a href="../pip_services3_elasticsearch/ElasticSearchLogger/isOpen.html">[...]</a>
+                  
+</dd>
+        <dt id="open" class="callable">
+          <span class="name"><a href="../pip_services3_elasticsearch/ElasticSearchLogger/open.html">open</a></span><span class="signature">(<wbr><span class="parameter" id="open-param-correlationId"><span class="type-annotation">String</span> <span class="parameter-name">correlationId</span></span><wbr>)
+            <span class="returntype parameter">&#8594; Future</span>
+          </span>
+                  </dt>
+        <dd>
+          Opens the component. <a href="../pip_services3_elasticsearch/ElasticSearchLogger/open.html">[...]</a>
+                  
+</dd>
+        <dt id="save" class="callable">
+          <span class="name"><a href="../pip_services3_elasticsearch/ElasticSearchLogger/save.html">save</a></span><span class="signature">(<wbr><span class="parameter" id="save-param-messages"><span class="type-annotation">List</span> <span class="parameter-name">messages</span></span><wbr>)
+            <span class="returntype parameter">&#8594; Future</span>
+          </span>
+                  </dt>
+        <dd>
+          Saves log messages from the cache. <a href="../pip_services3_elasticsearch/ElasticSearchLogger/save.html">[...]</a>
+                  
+</dd>
+        <dt id="setReferences" class="callable">
+          <span class="name"><a href="../pip_services3_elasticsearch/ElasticSearchLogger/setReferences.html">setReferences</a></span><span class="signature">(<wbr><span class="parameter" id="setReferences-param-references"><span class="type-annotation">dynamic</span> <span class="parameter-name">references</span></span><wbr>)
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+                  </dt>
+        <dd>
+          Sets references to dependent components. <a href="../pip_services3_elasticsearch/ElasticSearchLogger/setReferences.html">[...]</a>
+                  
+</dd>
+        <dt id="noSuchMethod" class="callable inherited">
+          <span class="name"><a href="../pip_services3_elasticsearch/ElasticSearchLogger/noSuchMethod.html">noSuchMethod</a></span><span class="signature">(<wbr><span class="parameter" id="noSuchMethod-param-invocation"><span class="type-annotation">Invocation</span> <span class="parameter-name">invocation</span></span><wbr>)
+            <span class="returntype parameter">&#8594; dynamic</span>
+          </span>
+                  </dt>
+        <dd class="inherited">
+          Invoked when a non-existent method or property is accessed. <a href="../pip_services3_elasticsearch/ElasticSearchLogger/noSuchMethod.html">[...]</a>
+                  <div class="features">inherited</div>
+</dd>
+        <dt id="toString" class="callable inherited">
+          <span class="name"><a href="../pip_services3_elasticsearch/ElasticSearchLogger/toString.html">toString</a></span><span class="signature">(<wbr>)
+            <span class="returntype parameter">&#8594; String</span>
+          </span>
+                  </dt>
+        <dd class="inherited">
+          Returns a string representation of this object. 
+                  <div class="features">inherited</div>
+</dd>
+      </dl>
+    </section>
+
+    <section class="summary offset-anchor inherited" id="operators">
+      <h2>Operators</h2>
+      <dl class="callables">
+        <dt id="operator ==" class="callable inherited">
+          <span class="name"><a href="../pip_services3_elasticsearch/ElasticSearchLogger/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation">dynamic</span> <span class="parameter-name">other</span></span><wbr>)
+            <span class="returntype parameter">&#8594; bool</span>
+          </span>
+                  </dt>
+        <dd class="inherited">
+          The equality operator. <a href="../pip_services3_elasticsearch/ElasticSearchLogger/operator_equals.html">[...]</a>
+                  <div class="features">inherited</div>
+</dd>
+      </dl>
+    </section>
+
+
+
+
+  </div> <!-- /.main-content -->
+
+  <div id="dartdoc-sidebar-right" class="col-xs-6 col-sm-6 col-md-2 sidebar sidebar-offcanvas-right">
+    <ol>
+    
+      <li class="section-title"><a href="../pip_services3_elasticsearch/ElasticSearchLogger-class.html#constructors">Constructors</a></li>
+      <li><a href="../pip_services3_elasticsearch/ElasticSearchLogger/ElasticSearchLogger.html">ElasticSearchLogger</a></li>
+    
+      <li class="section-title inherited">
+        <a href="../pip_services3_elasticsearch/ElasticSearchLogger-class.html#instance-properties">Properties</a>
+      </li>
+      <li class="inherited"><a href="../pip_services3_elasticsearch/ElasticSearchLogger/hashCode.html">hashCode</a></li>
+      <li class="inherited"><a href="../pip_services3_elasticsearch/ElasticSearchLogger/runtimeType.html">runtimeType</a></li>
+    
+      <li class="section-title"><a href="../pip_services3_elasticsearch/ElasticSearchLogger-class.html#instance-methods">Methods</a></li>
+      <li><a href="../pip_services3_elasticsearch/ElasticSearchLogger/close.html">close</a></li>
+      <li><a href="../pip_services3_elasticsearch/ElasticSearchLogger/configure.html">configure</a></li>
+      <li><a href="../pip_services3_elasticsearch/ElasticSearchLogger/isOpen.html">isOpen</a></li>
+      <li><a href="../pip_services3_elasticsearch/ElasticSearchLogger/open.html">open</a></li>
+      <li><a href="../pip_services3_elasticsearch/ElasticSearchLogger/save.html">save</a></li>
+      <li><a href="../pip_services3_elasticsearch/ElasticSearchLogger/setReferences.html">setReferences</a></li>
+      <li class="inherited"><a href="../pip_services3_elasticsearch/ElasticSearchLogger/noSuchMethod.html">noSuchMethod</a></li>
+      <li class="inherited"><a href="../pip_services3_elasticsearch/ElasticSearchLogger/toString.html">toString</a></li>
+    
+      <li class="section-title inherited"><a href="../pip_services3_elasticsearch/ElasticSearchLogger-class.html#operators">Operators</a></li>
+      <li class="inherited"><a href="../pip_services3_elasticsearch/ElasticSearchLogger/operator_equals.html">operator ==</a></li>
+    
+    
+    
+    
+    </ol>
+  </div><!--/.sidebar-offcanvas-->
+
+</main>
+
+<footer>
+  <span class="no-break">
+    pip_services3_elasticsearch
+      1.0.0
+  </span>
+
+</footer>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="../static-assets/typeahead.bundle.min.js"></script>
+<script src="../static-assets/highlight.pack.js"></script>
+<script src="../static-assets/URI.js"></script>
+<script src="../static-assets/script.js"></script>
+
+
+</body>
+
+</html>
