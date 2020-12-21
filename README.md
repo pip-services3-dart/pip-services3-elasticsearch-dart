@@ -33,6 +33,43 @@ Now you can install package from the command line:
 pub get
 ```
 
+Microservice components shall perform logging usual way using CompositeLogger component.
+The CompositeLogger will get ElasticSearchLogger from references and will redirect log messages
+there among other destinations.
+
+```dart
+class MyComponent implements IConfigurable, IReferenceable {
+  CompositeLogger _logger = new CompositeLogger();
+  
+  configure(ConfigParams config) {
+    this._logger.configure(config);
+  }
+  
+  setReferences(IReferences refs) {
+    this._logger.setReferences(refs);
+  }
+  
+  myMethod(String correlationId, param1) {
+    this._logger.trace(correlationId, "Executed method mycomponent.mymethod");
+    ....
+  }
+}
+```
+
+Configuration for your microservice that includes ElasticSearch logger may look the following way.
+
+```yaml
+...
+{{#if ELASTICSEARCH_ENABLED}}
+- descriptor: pip-services:logger:elasticsearch:default:1.0
+  connection:
+    uri: {{{ELASTICSEARCG_SERVICE_URI}}}
+    host: {{{ELASTICSEARCH_SERVICE_HOST}}}{{#unless ELASTICSEARCH_SERVICE_HOST}}localhost{{/unless}}
+    port: {{ELASTICSEARCG_SERVICE_PORT}}{{#unless ELASTICSEARCH_SERVICE_PORT}}9200{{/unless}}\ 
+{{/if}}
+...
+```
+
 ## Develop
 
 For development you shall install the following prerequisites:
