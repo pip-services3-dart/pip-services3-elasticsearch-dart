@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 import 'package:pip_services3_components/pip_services3_components.dart';
 
 class LoggerFixture {
-  CachedLogger _logger;
+  late CachedLogger _logger;
 
   LoggerFixture(CachedLogger logger) {
     _logger = logger;
@@ -16,7 +16,7 @@ class LoggerFixture {
     expect(_logger.getLevel().index <= LogLevel.Trace.index, isTrue);
   }
 
-  void testSimpleLogging() async {
+  Future testSimpleLogging() async {
     _logger.setLevel(LogLevel.Trace);
 
     _logger.fatal(null, null, 'Fatal error message');
@@ -30,7 +30,7 @@ class LoggerFixture {
     await Future.delayed(Duration(milliseconds: 1000));
   }
 
-  void testErrorLogging() async {
+  Future testErrorLogging() async {
     try {
       // Raise an exception
       throw Exception('Test error');

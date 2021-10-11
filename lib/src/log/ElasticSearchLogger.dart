@@ -1,8 +1,8 @@
 import 'dart:async';
 
+import 'package:elastic_client/elastic_client.dart';
 import 'package:intl/intl.dart';
 
-import 'package:elastic_client/console_http_transport.dart';
 import 'package:elastic_client/elastic_client.dart' as elastic;
 
 import 'package:pip_services3_commons/pip_services3_commons.dart';
@@ -38,6 +38,7 @@ import 'package:pip_services3_components/pip_services3_components.dart';
 ///     - [timeout]:         invocation timeout in milliseconds (default: 30 sec)
 ///     - [max_retries]:     maximum number of retries (default: 3)
 ///     - [index_message]:   true to enable indexing for message object (default: false)
+///     - [include_type_name]: Will create using a "typed" index compatible with ElasticSearch 6.x (default: false)
 ///
 /// ### References ###
 ///
@@ -63,18 +64,19 @@ class ElasticSearchLogger extends CachedLogger
     implements IReferenceable, IOpenable {
   final _connectionResolver = HttpConnectionResolver();
 
-  Timer _timer;
+  Timer? _timer;
   String _index = 'log';
   String _dateFormat = 'yyyyMMdd';
   bool _dailyIndex = false;
-  String _currentIndex;
+  String? _currentIndex;
   int _reconnect = 60000;
   int _timeout = 30000;
   int _maxRetries = 3;
   bool _indexMessage = false;
+  bool _includeTypeName = false;
 
-  elastic.Client _client;
-  ConsoleHttpTransport _transport;
+  elastic.Client? _client;
+  HttpTransport? _transport;
 
   /// Creates a new instance of the logger.
   ElasticSearchLogger() : super();
@@ -98,6 +100,8 @@ class ElasticSearchLogger extends CachedLogger
         config.getAsIntegerWithDefault('options.max_retries', _maxRetries);
     _indexMessage =
         config.getAsBooleanWithDefault('options.index_message', _indexMessage);
+    _includeTypeName = config.getAsBooleanWithDefault(
+        'options.include_type_name', _includeTypeName);
   }
 
   /// Sets references to dependent components.
@@ -123,7 +127,7 @@ class ElasticSearchLogger extends CachedLogger
   /// Return 			Future that receives null no errors occured.
   /// Throws error
   @override
-  Future open(String correlationId) async {
+  Future open(String? correlationId) async {
     if (isOpen()) {
       return null;
     }
@@ -134,7 +138,7 @@ class ElasticSearchLogger extends CachedLogger
           correlationId, 'NO_CONNECTION', 'Connection is not configured');
     }
 
-    var uri = connection.getUri();
+    var uri = connection.getAsString('uri');
 
     // var options = {
     //     host: uri,
@@ -143,8 +147,8 @@ class ElasticSearchLogger extends CachedLogger
     //     maxRetries: this._maxRetries
     // };
 
-    _transport = ConsoleHttpTransport(Uri.parse(uri));
-    _client = elastic.Client(_transport);
+    _transport = HttpTransport(url: Uri.parse(uri));
+    _client = elastic.Client(_transport!);
 
     await _createIndexIfNeeded(correlationId, true);
     _timer = Timer.periodic(Duration(milliseconds: interval), (tm) {
@@ -158,16 +162,16 @@ class ElasticSearchLogger extends CachedLogger
   /// Return 			Future that receives null no errors occured.
   /// Throws error
   @override
-  Future close(String correlationId) async {
+  Future close(String? correlationId) async {
     await save(cache);
     if (_timer != null) {
-      _timer.cancel();
+      _timer!.cancel();
     }
 
     cache = [];
     _timer = null;
     _client = null;
-    await _transport.close();
+    await _transport?.close();
     _transport = null;
   }
 
@@ -179,47 +183,56 @@ class ElasticSearchLogger extends CachedLogger
         DateFormat(_dateFormat).format(DateTime.now().toUtc());
   }
 
-  Future _createIndexIfNeeded(String correlationId, bool force) async {
+  Future _createIndexIfNeeded(String? correlationId, bool force) async {
     var newIndex = _getCurrentIndex();
     if (!force && _currentIndex == newIndex) {
       return null;
     }
 
     _currentIndex = newIndex;
-    var exists = await _client.indexExists(_currentIndex);
+    var exists = await _client!.indexExists(index: _currentIndex!);
 
     if (exists) {
       return null;
     }
 
-    await _client.updateIndex(_currentIndex, {
+    await _client!.updateIndex(index: _currentIndex!, content: {
       'settings': {'number_of_shards': 1},
-      'mappings': {
-        'log_message': {
-          'properties': {
-            'time': {'type': 'date', 'index': true},
-            'source': {'type': 'keyword', 'index': true},
-            'level': {'type': 'keyword', 'index': true},
-            'correlation_id': {'type': 'text', 'index': true},
-            'error': {
-              'type': 'object',
-              'properties': {
-                'type': {'type': 'keyword', 'index': true},
-                'category': {'type': 'keyword', 'index': true},
-                'status': {'type': 'integer', 'index': false},
-                'code': {'type': 'keyword', 'index': true},
-                'message': {'type': 'text', 'index': false},
-                'details': {'type': 'object'},
-                'correlation_id': {'type': 'text', 'index': false},
-                'cause': {'type': 'text', 'index': false},
-                'stack_trace': {'type': 'text', 'index': false}
-              }
-            },
-            'message': {'type': 'text', 'index': _indexMessage}
-          }
-        }
-      }
+      'mappings': _getIndexSchema()
     });
+  }
+
+  /// Returns the schema of the log message
+  /// - [include_type_name] A flag that indicates whether the schema should follow the pre-ES 6.x convention
+  Map<String, dynamic> _getIndexSchema() {
+    var schema = {
+      'properties': {
+        'time': {'type': 'date', 'index': true},
+        'source': {'type': 'keyword', 'index': true},
+        'level': {'type': 'keyword', 'index': true},
+        'correlation_id': {'type': 'text', 'index': true},
+        'error': {
+          'type': 'object',
+          'properties': {
+            'type': {'type': 'keyword', 'index': true},
+            'category': {'type': 'keyword', 'index': true},
+            'status': {'type': 'integer', 'index': false},
+            'code': {'type': 'keyword', 'index': true},
+            'message': {'type': 'text', 'index': false},
+            'details': {'type': 'object'},
+            'correlation_id': {'type': 'text', 'index': false},
+            'cause': {'type': 'text', 'index': false},
+            'stack_trace': {'type': 'text', 'index': false}
+          }
+        },
+        'message': {'type': 'text', 'index': _indexMessage}
+      }
+    };
+    if (_includeTypeName) {
+      return {'log_message': schema};
+    } else {
+      return schema;
+    }
   }
 
   /// Saves log messages from the cache.
@@ -235,18 +248,32 @@ class ElasticSearchLogger extends CachedLogger
 
     await _createIndexIfNeeded('elasticsearch_logger', false);
 
+    var logItem = getLogItem();
+
     var bulk = <Doc>[];
     for (var message in messages) {
-      var doc = Doc(IdGenerator.nextLong(), message.toJson(),
-          index: _currentIndex, type: 'log_message');
+      var doc = Doc(logItem['_id'], message.toJson(),
+          index: logItem['_index'], type: logItem['_type']);
       bulk.add(doc);
     }
 
-    var compleate =
-        await _client.updateDocs(_currentIndex, 'log_message', bulk);
+    var compleate = await _client!.bulk(updateDocs: bulk);
     if (!compleate) {
       throw ApplicationException('Logger', 'elasticsearch_logger', 'SAVE_ERROR',
           'Can\'t save log messages to Elasticsearch server!');
     }
+  }
+
+  Map<String, dynamic> getLogItem() {
+    return _includeTypeName
+        ? {
+            '_index': _currentIndex,
+            '_type': 'log_message',
+            '_id': IdGenerator.nextLong()
+          } // ElasticSearch 6.x
+        : {
+            '_index': _currentIndex,
+            '_id': IdGenerator.nextLong()
+          }; // ElasticSearch 7.x
   }
 }

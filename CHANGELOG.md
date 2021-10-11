@@ -3,3 +3,8 @@
 ## 1.0.0
 
 - Initial version, created by Sergey Seroukhov and Dmitry Levichev
+
+## 1.1.0
+
+- Migrated to null safety
+- Added supports ElasticSearch 7.x "typeless" indexes as well as 6.x "typed" indexes.

@@ -7,8 +7,8 @@ import '../fixtures/LoggerFixture.dart';
 
 void main() {
   group('ElasticSearchLogger', () {
-    ElasticSearchLogger _logger;
-    LoggerFixture _fixture;
+    late ElasticSearchLogger _logger;
+    late LoggerFixture _fixture;
 
     setUp(() async {
       var host =

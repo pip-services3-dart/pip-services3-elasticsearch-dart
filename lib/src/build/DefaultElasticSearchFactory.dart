@@ -6,8 +6,6 @@ import '../log/ElasticSearchLogger.dart';
 ///
 /// See [ElasticSearchLogger]
 class DefaultElasticSearchFactory extends Factory {
-  static final descriptor =
-      Descriptor('pip-services', 'factory', 'elasticsearch', 'default', '1.0');
   static final ElasticSearchLoggerDescriptor =
       Descriptor('pip-services', 'logger', 'elasticsearch', '*', '1.0');
 

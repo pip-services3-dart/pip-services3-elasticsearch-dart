@@ -1,18 +1,17 @@
 name: pip_services3_elasticsearch
-version: 1.0.0
-author: Sergey Seroukhov <seroukhov@gmail.com>
+version: 1.1.0
 description: This component library is a part of the [Pip.Services](https://github.com/pip-services/pip-services) project. It contains the ElasticSearch logger.
 homepage: https://github.com/pip-services3-dart/pip-services3-elasticsearch-dart
 
 environment:
-  sdk: ">=2.0.0 <3.0.0"
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  pip_services3_commons: ">=1.0.2 <2.0.0"
-  pip_services3_components: ">=1.0.4 <2.0.0"
-  pip_services3_rpc: ">=1.0.1 < 2.0.0"
-  elastic_client: ^0.1.10
-  intl: ^0.16.1
+  pip_services3_commons: ^1.1.3
+  pip_services3_components: ^1.1.2
+  pip_services3_rpc: ^1.1.1
+  elastic_client: ^0.3.8
+  intl: ^0.17.0
 
 dev_dependencies:
-  test: '>=1.14.2 <2.0.0'
+  test: ^1.17.12
